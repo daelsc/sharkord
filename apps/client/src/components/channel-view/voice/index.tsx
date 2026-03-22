@@ -2,7 +2,8 @@ import { useVoiceUsersByChannelId } from '@/features/server/hooks';
 import {
   useHideNonVideoParticipants,
   useHideOwnScreenShare,
-  useVoiceChannelExternalStreamsList
+  useVoiceChannelExternalStreamsList,
+  useVoiceVerticalLayout
 } from '@/features/server/voice/hooks';
 import { useOwnUserId } from '@/features/server/users/hooks';
 import { memo, useMemo } from 'react';
@@ -27,6 +28,7 @@ const VoiceChannel = memo(({ channelId }: TChannelProps) => {
   const hideNonVideoParticipants = useHideNonVideoParticipants();
   const hideOwnScreenShare = useHideOwnScreenShare();
   const ownUserId = useOwnUserId();
+  const verticalLayout = useVoiceVerticalLayout();
 
   const cards = useMemo(() => {
     const cards: React.ReactNode[] = [];
@@ -143,7 +145,7 @@ const VoiceChannel = memo(({ channelId }: TChannelProps) => {
 
   return (
     <div className="flex-1 relative bg-background overflow-hidden">
-      <VoiceGrid pinnedCardId={pinnedCard?.id} className="h-full">
+      <VoiceGrid pinnedCardId={pinnedCard?.id} className="h-full" verticalLayout={verticalLayout}>
         {cards}
       </VoiceGrid>
       <ControlsBar channelId={channelId} />
