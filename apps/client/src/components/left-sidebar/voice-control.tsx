@@ -73,6 +73,44 @@ const VoiceControl = memo(() => {
       <VoiceAudioStreams channelId={voiceChannelId} />
       <ExternalAudioStreams channelId={voiceChannelId} />
       <div className="bg-secondary/30 border-t border-border">
+        {ownVoiceState.sharingScreen && (
+          <div className="flex items-center justify-between px-2 py-1.5 bg-purple-500/10 border-b border-border">
+            <div className="flex items-center gap-2 min-w-0">
+              <Monitor className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+              <span className="text-xs font-medium text-purple-400 truncate">
+                Screen sharing
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 shrink-0"
+              onClick={toggleScreenShare}
+            >
+              Stop
+            </Button>
+          </div>
+        )}
+
+        {ownVoiceState.webcamEnabled && (
+          <div className="flex items-center justify-between px-2 py-1.5 bg-green-500/10 border-b border-border">
+            <div className="flex items-center gap-2 min-w-0">
+              <Video className="h-3.5 w-3.5 text-green-400 shrink-0" />
+              <span className="text-xs font-medium text-green-400 truncate">
+                Camera on
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs text-green-400 hover:text-green-300 hover:bg-green-500/20 shrink-0"
+              onClick={toggleWebcam}
+            >
+              Stop
+            </Button>
+          </div>
+        )}
+
         <StatsPopover>
           <div className="flex items-center px-2 py-1.5 gap-2 bg-secondary/50 cursor-pointer hover:bg-secondary/60 transition-colors">
             {connectionInfo.icon}
