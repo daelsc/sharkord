@@ -31,7 +31,8 @@ const VoiceControl = memo(() => {
     toggleWebcam,
     toggleScreenShare,
     connectionStatus,
-    isScreenShareSupported
+    isScreenShareSupported,
+    screenShareLabel
   } = useVoice();
 
   const connectionInfo = useMemo(() => {
@@ -78,7 +79,7 @@ const VoiceControl = memo(() => {
             <div className="flex items-center gap-2 min-w-0">
               <Monitor className="h-3.5 w-3.5 text-purple-400 shrink-0" />
               <span className="text-xs font-medium text-purple-400 truncate">
-                Screen sharing
+                {screenShareLabel || 'Screen sharing'}
               </span>
             </div>
             <Button

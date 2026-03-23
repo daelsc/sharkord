@@ -126,6 +126,7 @@ export type TVoiceProvider = {
   disableUserStream: (userId: number, kind: TRemoteUserStreamKinds) => Promise<void>;
   enableUserStream: (userId: number, kind: TRemoteUserStreamKinds) => Promise<void>;
   isStreamDisabled: (userId: number, kind: StreamKind) => boolean;
+  screenShareLabel: string | null;
   init: (
     routerRtpCapabilities: RtpCapabilities,
     channelId: number
@@ -176,6 +177,7 @@ const VoiceProviderContext = createContext<TVoiceProvider>({
   disableUserStream: () => Promise.resolve(),
   enableUserStream: () => Promise.resolve(),
   isStreamDisabled: () => false,
+  screenShareLabel: null,
   init: () => Promise.resolve(),
   toggleMic: () => Promise.resolve(),
   toggleSound: () => Promise.resolve(),
@@ -202,6 +204,7 @@ type TVoiceProviderProps = {
 
 const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
   const [loading, setLoading] = useState(false);
+  const [screenShareLabel, setScreenShareLabel] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(
     ConnectionStatus.DISCONNECTED
   );
@@ -871,6 +874,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     setScreenShareProducer(null);
     setLocalScreenShare(undefined);
     setLocalScreenShareAudio(undefined);
+    setScreenShareLabel(null);
   }, [
     localScreenShareStream,
     setLocalScreenShare,
@@ -921,6 +925,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       setLocalScreenShare(stream);
 
       const videoTrack = stream.getVideoTracks()[0];
+      setScreenShareLabel(videoTrack?.label || 'Screen');
       const audioTrack = stream.getAudioTracks()[0];
 
       if (videoTrack) {
@@ -1295,6 +1300,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       disableUserStream,
       enableUserStream,
       isStreamDisabled,
+      screenShareLabel,
       init,
 
       toggleMic,
@@ -1325,6 +1331,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       disableUserStream,
       enableUserStream,
       isStreamDisabled,
+      screenShareLabel,
       init,
 
       toggleMic,
