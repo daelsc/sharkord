@@ -623,7 +623,20 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       setLocalScreenShare(stream);
 
       const videoTrack = stream.getVideoTracks()[0];
-      setScreenShareLabel(videoTrack?.label || 'Screen');
+      const trackLabel = videoTrack?.label || '';
+      const displaySurface = videoTrack?.getSettings()?.displaySurface;
+      const isRawId = /^(window|screen):\d/.test(trackLabel);
+      const friendlyLabel =
+        isRawId || !trackLabel
+          ? displaySurface === 'monitor'
+            ? 'Entire screen'
+            : displaySurface === 'browser'
+              ? 'Browser tab'
+              : displaySurface === 'window'
+                ? 'Application window'
+                : 'Screen'
+          : trackLabel;
+      setScreenShareLabel(friendlyLabel);
       const audioTrack = stream.getAudioTracks()[0];
 
       if (videoTrack) {
