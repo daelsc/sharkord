@@ -2,7 +2,12 @@ import { UserAvatar } from '@/components/user-avatar';
 import { useStreamVolumeControl } from '@/components/voice-provider/hooks/use-stream-volume-control';
 import type { TVoiceUser } from '@/features/server/types';
 import { useIsOwnUser } from '@/features/server/users/hooks';
-import { useSpeakingState, useVoice } from '@/features/server/voice/hooks';
+import { setHideOwnScreenShare } from '@/features/server/voice/actions';
+import {
+  useHideOwnScreenShare,
+  useSpeakingState,
+  useVoice
+} from '@/features/server/voice/hooks';
 import { StreamKind } from '@sharkord/shared';
 import { cn } from '@sharkord/ui';
 import {
@@ -33,6 +38,7 @@ const VoiceUser = memo(({ user, isOwnChannel = false }: TVoiceUserProps) => {
   const { disableUserStream, enableUserStream, isStreamDisabled } = useVoice();
   const videoDisabled = isStreamDisabled(user.id, StreamKind.VIDEO);
   const screenDisabled = isStreamDisabled(user.id, StreamKind.SCREEN);
+  const hideOwnScreen = useHideOwnScreenShare();
   const shouldShowMuteIndicator = isOwnChannel && !isOwnUser && isMuted;
 
   const userRow = (
@@ -118,7 +124,23 @@ const VoiceUser = memo(({ user, isOwnChannel = false }: TVoiceUserProps) => {
           </button>
         )}
         {user.state.sharingScreen && isOwnUser && (
-          <Monitor className="h-3 w-3 text-purple-500" />
+          <button
+            type="button"
+            className="cursor-pointer hover:opacity-100"
+            title={
+              hideOwnScreen ? 'Show own screen share' : 'Hide own screen share'
+            }
+            onClick={(e) => {
+              e.stopPropagation();
+              setHideOwnScreenShare(!hideOwnScreen);
+            }}
+          >
+            {hideOwnScreen ? (
+              <MonitorOff className="h-3 w-3 text-red-500" />
+            ) : (
+              <Monitor className="h-3 w-3 text-purple-500" />
+            )}
+          </button>
         )}
       </div>
     </div>
