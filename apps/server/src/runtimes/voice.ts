@@ -32,6 +32,23 @@ const defaultRouterOptions: RouterOptions<AppData> = {
   mediaCodecs: [
     {
       kind: 'video',
+      mimeType: 'video/VP9',
+      clockRate: 90000,
+      parameters: {
+        'profile-id': 0,
+        'x-google-start-bitrate': 2000
+      }
+    },
+    {
+      kind: 'video',
+      mimeType: 'video/VP8',
+      clockRate: 90000,
+      parameters: {
+        'x-google-start-bitrate': 2000
+      }
+    },
+    {
+      kind: 'video',
       mimeType: 'video/H264',
       clockRate: 90000,
       parameters: {
@@ -55,23 +72,6 @@ const defaultRouterOptions: RouterOptions<AppData> = {
     {
       kind: 'video',
       mimeType: 'video/AV1',
-      clockRate: 90000,
-      parameters: {
-        'x-google-start-bitrate': 2000
-      }
-    },
-    {
-      kind: 'video',
-      mimeType: 'video/VP9',
-      clockRate: 90000,
-      parameters: {
-        'profile-id': 0,
-        'x-google-start-bitrate': 2000
-      }
-    },
-    {
-      kind: 'video',
-      mimeType: 'video/VP8',
       clockRate: 90000,
       parameters: {
         'x-google-start-bitrate': 2000
