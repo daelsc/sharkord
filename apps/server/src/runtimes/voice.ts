@@ -704,6 +704,28 @@ class VoiceRuntime {
     });
   };
 
+  public pauseConsumer = async (
+    userId: number,
+    remoteId: number,
+    kind: StreamKind
+  ): Promise<boolean> => {
+    const consumer = this.getConsumer(userId, remoteId, kind);
+    if (!consumer) return false;
+    await consumer.pause();
+    return true;
+  };
+
+  public resumeConsumer = async (
+    userId: number,
+    remoteId: number,
+    kind: StreamKind
+  ): Promise<boolean> => {
+    const consumer = this.getConsumer(userId, remoteId, kind);
+    if (!consumer) return false;
+    await consumer.resume();
+    return true;
+  };
+
   public createExternalStream = (options: {
     title: string;
     key: string;

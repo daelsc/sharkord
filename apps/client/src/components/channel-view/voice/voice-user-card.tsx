@@ -20,6 +20,7 @@ import { useVoiceRefs } from './hooks/use-voice-refs';
 import { PictureInPictureButton } from './picture-in-picture-button';
 import { PinButton } from './pin-button';
 import { QualityButton } from './quality-button';
+import { StreamToggleButton } from './stream-toggle-button';
 import { VolumeButton } from './volume-button';
 
 type TVoiceUserCardProps = {
@@ -47,7 +48,14 @@ const VoiceUserCard = memo(
     const { devices } = useDevices();
     const isOwnUser = useIsOwnUser(userId);
     const webRtcSimulcastEnabled = useWebRtcSimulcastEnabled();
-    const { isSimulcastConsumer } = useVoice();
+    const {
+      isSimulcastConsumer,
+      disableUserStream,
+      enableUserStream,
+      isStreamDisabled
+    } = useVoice();
+    const videoDisabled =
+      !isOwnUser && isStreamDisabled(userId, StreamKind.VIDEO);
     const showUserBanners = useShowUserBannersInVoice();
     const { isActivelySpeaking, speakingEffectClass } =
       useSpeakingState(userId);
@@ -96,6 +104,17 @@ const VoiceUserCard = memo(
             />
           )}
           {hasVideoStream && <PictureInPictureButton videoRef={videoRef} />}
+          {!isOwnUser && voiceUser.state.webcamEnabled && (
+            <StreamToggleButton
+              isDisabled={videoDisabled}
+              kind="video"
+              onToggle={() =>
+                videoDisabled
+                  ? enableUserStream(userId, StreamKind.VIDEO)
+                  : disableUserStream(userId, StreamKind.VIDEO)
+              }
+            />
+          )}
           {showPinControls && (
             <PinButton isPinned={isPinned} handlePinToggle={handlePinToggle} />
           )}

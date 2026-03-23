@@ -24,7 +24,7 @@ import {
 import { getResWidthHeight } from '@/helpers/get-res-with-height';
 import { useScreenShareSupport } from '@/hooks/use-screen-share-support';
 import { getTRPCClient } from '@/lib/trpc';
-import { NoiseSuppression, VideoCodec, type TStreamQuality } from '@/types';
+import { NoiseSuppression, VideoCodec, type TRemoteUserStreamKinds, type TStreamQuality } from '@/types';
 import {
   DEFAULT_BITRATE,
   StreamKind,
@@ -67,6 +67,7 @@ import {
   type TRemoteQualityLayers,
   type TStreamQualitySettings
 } from './helpers';
+import { useDisabledStreams } from './hooks/use-disabled-streams';
 import { useLocalStreams } from './hooks/use-local-streams';
 import { useRemoteStreams } from './hooks/use-remote-streams';
 import {
@@ -122,6 +123,9 @@ export type TVoiceProvider = {
     quality: TStreamQuality
   ) => Promise<void>;
   isSimulcastConsumer: (remoteId: number, kind: StreamKind) => boolean;
+  disableUserStream: (userId: number, kind: TRemoteUserStreamKinds) => Promise<void>;
+  enableUserStream: (userId: number, kind: TRemoteUserStreamKinds) => Promise<void>;
+  isStreamDisabled: (userId: number, kind: StreamKind) => boolean;
   init: (
     routerRtpCapabilities: RtpCapabilities,
     channelId: number
@@ -169,6 +173,9 @@ const VoiceProviderContext = createContext<TVoiceProvider>({
   getStreamQualityLayers: () => [],
   setStreamQuality: () => Promise.resolve(),
   isSimulcastConsumer: () => false,
+  disableUserStream: () => Promise.resolve(),
+  enableUserStream: () => Promise.resolve(),
+  isStreamDisabled: () => false,
   init: () => Promise.resolve(),
   toggleMic: () => Promise.resolve(),
   toggleSound: () => Promise.resolve(),
@@ -394,7 +401,9 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     consume,
     consumeExistingProducers,
     cleanupTransports,
-    getConsumerCodec
+    getConsumerCodec,
+    pauseConsumer,
+    resumeConsumer
   } = useTransports({
     addExternalStreamTrack,
     removeExternalStreamTrack,
@@ -404,6 +413,38 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     setRemoteStreamQualityLayers,
     clearRemoteConsumerMetadata
   });
+
+  const {
+    disableStream,
+    enableStream,
+    isStreamDisabled,
+    clearDisabledStreams,
+    clearDisabledStreamsForUser
+  } = useDisabledStreams();
+
+  const disableUserStream = useCallback(
+    async (userId: number, kind: TRemoteUserStreamKinds) => {
+      disableStream(userId, kind);
+      await pauseConsumer(userId, kind);
+      if (kind === StreamKind.SCREEN) {
+        disableStream(userId, StreamKind.SCREEN_AUDIO);
+        await pauseConsumer(userId, StreamKind.SCREEN_AUDIO);
+      }
+    },
+    [disableStream, pauseConsumer]
+  );
+
+  const enableUserStream = useCallback(
+    async (userId: number, kind: TRemoteUserStreamKinds) => {
+      enableStream(userId, kind);
+      await resumeConsumer(userId, kind);
+      if (kind === StreamKind.SCREEN) {
+        enableStream(userId, StreamKind.SCREEN_AUDIO);
+        await resumeConsumer(userId, StreamKind.SCREEN_AUDIO);
+      }
+    },
+    [enableStream, resumeConsumer]
+  );
 
   const {
     stats: transportStats,
@@ -1084,6 +1125,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     clearLocalStreams();
     clearRemoteUserStreams();
     clearExternalStreams();
+    clearDisabledStreams();
     cleanupTransports();
     deviceRtpCapabilities.current = null;
 
@@ -1095,6 +1137,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     clearLocalStreams,
     clearRemoteUserStreams,
     clearExternalStreams,
+    clearDisabledStreams,
     cleanupTransports
   ]);
 
@@ -1209,6 +1252,8 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     removeExternalStreamTrack,
     removeExternalStream,
     clearRemoteUserStreamsForUser,
+    clearDisabledStreamsForUser,
+    isStreamDisabled,
     rtpCapabilities: deviceRtpCapabilities.current
   });
 
@@ -1247,6 +1292,9 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       getStreamQualityLayers,
       setStreamQuality,
       isSimulcastConsumer,
+      disableUserStream,
+      enableUserStream,
+      isStreamDisabled,
       init,
 
       toggleMic,
@@ -1274,6 +1322,9 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       getStreamQualityLayers,
       setStreamQuality,
       isSimulcastConsumer,
+      disableUserStream,
+      enableUserStream,
+      isStreamDisabled,
       init,
 
       toggleMic,

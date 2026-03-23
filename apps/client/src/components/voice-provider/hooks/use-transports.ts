@@ -452,6 +452,47 @@ const useTransports = ({
     []
   );
 
+  const pauseConsumer = useCallback(
+    async (remoteId: number, kind: TRemoteUserStreamKinds) => {
+      const consumer = consumers.current[remoteId]?.[kind];
+
+      if (consumer && !consumer.closed) {
+        consumer.pause();
+      }
+
+      try {
+        const trpc = getTRPCClient();
+        await trpc.voice.pauseConsumer.mutate({ remoteId, kind });
+      } catch (error) {
+        logVoice('Error pausing consumer', { error });
+      }
+
+      removeRemoteUserStream(remoteId, kind);
+    },
+    [removeRemoteUserStream]
+  );
+
+  const resumeConsumer = useCallback(
+    async (remoteId: number, kind: TRemoteUserStreamKinds) => {
+      try {
+        const trpc = getTRPCClient();
+        await trpc.voice.resumeConsumer.mutate({ remoteId, kind });
+      } catch (error) {
+        logVoice('Error resuming consumer', { error });
+      }
+
+      const consumer = consumers.current[remoteId]?.[kind];
+
+      if (consumer && !consumer.closed) {
+        consumer.resume();
+        const stream = new MediaStream();
+        stream.addTrack(consumer.track);
+        addRemoteUserStream(remoteId, stream, kind);
+      }
+    },
+    [addRemoteUserStream]
+  );
+
   const cleanupTransports = useCallback(() => {
     logVoice('Cleaning up transports');
 
@@ -494,7 +535,9 @@ const useTransports = ({
     consume,
     consumeExistingProducers,
     cleanupTransports,
-    getConsumerCodec
+    getConsumerCodec,
+    pauseConsumer,
+    resumeConsumer
   };
 };
 
