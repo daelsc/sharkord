@@ -5,16 +5,19 @@ import type { TVoiceUser } from '@/features/server/types';
 import { useIsOwnUser } from '@/features/server/users/hooks';
 import {
   useShowUserBannersInVoice,
-  useSpeakingState
+  useSpeakingState,
+  useVoice
 } from '@/features/server/voice/hooks';
 import { getFileUrl } from '@/helpers/get-file-url';
 import { cn } from '@/lib/utils';
+import { StreamKind } from '@sharkord/shared';
 import { HeadphoneOff, MicOff, Monitor, Video } from 'lucide-react';
 import { memo, useCallback } from 'react';
 import { CardControls } from './card-controls';
 import { CardGradient } from './card-gradient';
 import { useVoiceRefs } from './hooks/use-voice-refs';
 import { PinButton } from './pin-button';
+import { StreamToggleButton } from './stream-toggle-button';
 import { VolumeButton } from './volume-button';
 
 type TVoiceUserCardProps = {
@@ -41,6 +44,10 @@ const VoiceUserCard = memo(
     const { volumeKey } = useStreamVolumeControl({ type: 'user', userId });
     const { devices } = useDevices();
     const isOwnUser = useIsOwnUser(userId);
+    const { disableUserStream, enableUserStream, isStreamDisabled } =
+      useVoice();
+    const videoDisabled =
+      !isOwnUser && isStreamDisabled(userId, StreamKind.VIDEO);
     const showUserBanners = useShowUserBannersInVoice();
     const { isActivelySpeaking, speakingEffectClass } =
       useSpeakingState(userId);
@@ -77,6 +84,17 @@ const VoiceUserCard = memo(
 
         <CardControls>
           {!isOwnUser && <VolumeButton volumeKey={volumeKey} />}
+          {!isOwnUser && voiceUser.state.webcamEnabled && (
+            <StreamToggleButton
+              isDisabled={videoDisabled}
+              kind="video"
+              onToggle={() =>
+                videoDisabled
+                  ? enableUserStream(userId, StreamKind.VIDEO)
+                  : disableUserStream(userId, StreamKind.VIDEO)
+              }
+            />
+          )}
           {showPinControls && (
             <PinButton isPinned={isPinned} handlePinToggle={handlePinToggle} />
           )}

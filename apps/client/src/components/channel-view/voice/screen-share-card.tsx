@@ -15,6 +15,7 @@ import { useScreenShareZoom } from './hooks/use-screen-share-zoom';
 import { useVideoStats } from './hooks/use-video-stats';
 import { useVoiceRefs } from './hooks/use-voice-refs';
 import { PinButton } from './pin-button';
+import { StreamToggleButton } from './stream-toggle-button';
 import { VolumeButton } from './volume-button';
 
 type tScreenShareControlsProps = {
@@ -24,6 +25,9 @@ type tScreenShareControlsProps = {
   handleToggleZoom: () => void;
   showPinControls: boolean;
   showAudioControl: boolean;
+  showStreamToggle: boolean;
+  streamDisabled: boolean;
+  onStreamToggle: () => void;
   volumeKey: TVolumeKey;
 };
 
@@ -35,11 +39,21 @@ const ScreenShareControls = memo(
     handleToggleZoom,
     showPinControls,
     showAudioControl,
+    showStreamToggle,
+    streamDisabled,
+    onStreamToggle,
     volumeKey
   }: tScreenShareControlsProps) => {
     return (
       <CardControls>
         {showAudioControl && <VolumeButton volumeKey={volumeKey} />}
+        {showStreamToggle && (
+          <StreamToggleButton
+            isDisabled={streamDisabled}
+            kind="screen"
+            onToggle={onStreamToggle}
+          />
+        )}
         {showPinControls && isPinned && (
           <IconButton
             variant={isZoomEnabled ? 'default' : 'ghost'}
@@ -86,7 +100,15 @@ const ScreenShareCard = memo(
       hasScreenShareStream,
       hasScreenShareAudioStream
     } = useVoiceRefs(userId);
-    const { transportStats, getConsumerCodec } = useVoice();
+    const {
+      transportStats,
+      getConsumerCodec,
+      disableUserStream,
+      enableUserStream,
+      isStreamDisabled
+    } = useVoice();
+    const screenDisabled =
+      !isOwnUser && isStreamDisabled(userId, StreamKind.SCREEN);
     const videoStats = useVideoStats(screenShareRef, hasScreenShareStream);
 
     const codec = useMemo(() => {
@@ -164,6 +186,13 @@ const ScreenShareCard = memo(
           handleToggleZoom={handleToggleZoom}
           showPinControls={showPinControls}
           showAudioControl={!isOwnUser && hasScreenShareAudioStream}
+          showStreamToggle={!isOwnUser}
+          streamDisabled={screenDisabled}
+          onStreamToggle={() =>
+            screenDisabled
+              ? enableUserStream(userId, StreamKind.SCREEN)
+              : disableUserStream(userId, StreamKind.SCREEN)
+          }
           volumeKey={volumeKey}
         />
 

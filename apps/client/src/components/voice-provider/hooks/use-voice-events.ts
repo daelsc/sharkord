@@ -23,6 +23,8 @@ type TEvents = {
   ) => void;
   removeExternalStream: (streamId: number) => void;
   clearRemoteUserStreamsForUser: (userId: number) => void;
+  clearDisabledStreamsForUser: (userId: number) => void;
+  isStreamDisabled: (userId: number, kind: StreamKind) => boolean;
   rtpCapabilities: RtpCapabilities;
 };
 
@@ -32,6 +34,8 @@ const useVoiceEvents = ({
   removeExternalStreamTrack,
   removeExternalStream,
   clearRemoteUserStreamsForUser,
+  clearDisabledStreamsForUser,
+  isStreamDisabled,
   rtpCapabilities
 }: TEvents) => {
   const currentVoiceChannelId = useCurrentVoiceChannelId();
@@ -69,6 +73,14 @@ const useVoiceEvents = ({
             kind,
             channelId
           });
+
+          if (isStreamDisabled(remoteId, kind)) {
+            logVoice('Skipping consume for disabled stream', {
+              remoteId,
+              kind
+            });
+            return;
+          }
 
           try {
             consume(remoteId, kind, rtpCapabilities);
@@ -131,6 +143,7 @@ const useVoiceEvents = ({
 
         try {
           clearRemoteUserStreamsForUser(userId);
+          clearDisabledStreamsForUser(userId);
         } catch (error) {
           logVoice('Error clearing remote streams for user', { error });
         }
@@ -183,6 +196,8 @@ const useVoiceEvents = ({
     removeExternalStreamTrack,
     removeExternalStream,
     clearRemoteUserStreamsForUser,
+    clearDisabledStreamsForUser,
+    isStreamDisabled,
     rtpCapabilities
   ]);
 };
