@@ -2,7 +2,8 @@ import { UserAvatar } from '@/components/user-avatar';
 import { useStreamVolumeControl } from '@/components/voice-provider/hooks/use-stream-volume-control';
 import type { TVoiceUser } from '@/features/server/types';
 import { useIsOwnUser } from '@/features/server/users/hooks';
-import { useSpeakingState } from '@/features/server/voice/hooks';
+import { useSpeakingState, useVoice } from '@/features/server/voice/hooks';
+import { StreamKind } from '@sharkord/shared';
 import { cn } from '@sharkord/ui';
 import {
   HeadphoneOff,
@@ -10,7 +11,9 @@ import {
   Mic,
   MicOff,
   Monitor,
+  MonitorOff,
   Video,
+  VideoOff,
   VolumeX
 } from 'lucide-react';
 import { memo } from 'react';
@@ -27,6 +30,9 @@ const VoiceUser = memo(({ user, isOwnChannel = false }: TVoiceUserProps) => {
   const isOwnUser = useIsOwnUser(user.id);
   const { isMuted } = useStreamVolumeControl({ type: 'user', userId: user.id });
   const { isActivelySpeaking, speakingEffectClass } = useSpeakingState(user.id);
+  const { disableUserStream, enableUserStream, isStreamDisabled } = useVoice();
+  const videoDisabled = isStreamDisabled(user.id, StreamKind.VIDEO);
+  const screenDisabled = isStreamDisabled(user.id, StreamKind.SCREEN);
   const shouldShowMuteIndicator = isOwnChannel && !isOwnUser && isMuted;
 
   const userRow = (
@@ -63,11 +69,55 @@ const VoiceUser = memo(({ user, isOwnChannel = false }: TVoiceUserProps) => {
           )}
         </div>
 
-        {user.state.webcamEnabled && (
+        {user.state.webcamEnabled && !isOwnUser && (
+          <button
+            type="button"
+            className="cursor-pointer hover:opacity-100"
+            title={videoDisabled ? 'Enable video' : 'Disable video'}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (videoDisabled) {
+                enableUserStream(user.id, StreamKind.VIDEO);
+              } else {
+                disableUserStream(user.id, StreamKind.VIDEO);
+              }
+            }}
+          >
+            {videoDisabled ? (
+              <VideoOff className="h-3 w-3 text-red-500" />
+            ) : (
+              <Video className="h-3 w-3 text-blue-500" />
+            )}
+          </button>
+        )}
+        {user.state.webcamEnabled && isOwnUser && (
           <Video className="h-3 w-3 text-blue-500" />
         )}
 
-        {user.state.sharingScreen && (
+        {user.state.sharingScreen && !isOwnUser && (
+          <button
+            type="button"
+            className="cursor-pointer hover:opacity-100"
+            title={
+              screenDisabled ? 'Enable screen share' : 'Disable screen share'
+            }
+            onClick={(e) => {
+              e.stopPropagation();
+              if (screenDisabled) {
+                enableUserStream(user.id, StreamKind.SCREEN);
+              } else {
+                disableUserStream(user.id, StreamKind.SCREEN);
+              }
+            }}
+          >
+            {screenDisabled ? (
+              <MonitorOff className="h-3 w-3 text-red-500" />
+            ) : (
+              <Monitor className="h-3 w-3 text-purple-500" />
+            )}
+          </button>
+        )}
+        {user.state.sharingScreen && isOwnUser && (
           <Monitor className="h-3 w-3 text-purple-500" />
         )}
       </div>
