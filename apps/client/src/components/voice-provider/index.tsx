@@ -42,6 +42,7 @@ import {
   setVoiceControlsBridge
 } from './controls-bridge';
 import { FloatingPinnedCard } from './floating-pinned-card';
+import { useDisabledStreams } from './hooks/use-disabled-streams';
 import { useLocalStreams } from './hooks/use-local-streams';
 import { useRemoteStreams } from './hooks/use-remote-streams';
 import {
@@ -80,6 +81,9 @@ export type TVoiceProvider = {
   isScreenShareSupported: boolean;
   getOrCreateRefs: (remoteId: number) => AudioVideoRefs;
   getConsumerCodec: (remoteId: number, kind: StreamKind) => string | undefined;
+  disableUserStream: (userId: number, kind: StreamKind) => Promise<void>;
+  enableUserStream: (userId: number, kind: StreamKind) => Promise<void>;
+  isStreamDisabled: (userId: number, kind: StreamKind) => boolean;
   init: (
     routerRtpCapabilities: RtpCapabilities,
     channelId: number
@@ -123,6 +127,9 @@ const VoiceProviderContext = createContext<TVoiceProvider>({
     externalVideoRef: { current: null }
   }),
   getConsumerCodec: () => undefined,
+  disableUserStream: () => Promise.resolve(),
+  enableUserStream: () => Promise.resolve(),
+  isStreamDisabled: () => false,
   init: () => Promise.resolve(),
   toggleMic: () => Promise.resolve(),
   toggleSound: () => Promise.resolve(),
@@ -209,13 +216,47 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     consume,
     consumeExistingProducers,
     cleanupTransports,
-    getConsumerCodec
+    getConsumerCodec,
+    pauseConsumer,
+    resumeConsumer
   } = useTransports({
     addExternalStreamTrack,
     removeExternalStreamTrack,
     addRemoteUserStream,
     removeRemoteUserStream
   });
+
+  const {
+    disableStream,
+    enableStream,
+    isStreamDisabled,
+    clearDisabledStreams,
+    clearDisabledStreamsForUser
+  } = useDisabledStreams();
+
+  const disableUserStream = useCallback(
+    async (userId: number, kind: StreamKind) => {
+      disableStream(userId, kind);
+      await pauseConsumer(userId, kind);
+      if (kind === StreamKind.SCREEN) {
+        disableStream(userId, StreamKind.SCREEN_AUDIO);
+        await pauseConsumer(userId, StreamKind.SCREEN_AUDIO);
+      }
+    },
+    [disableStream, pauseConsumer]
+  );
+
+  const enableUserStream = useCallback(
+    async (userId: number, kind: StreamKind) => {
+      enableStream(userId, kind);
+      await resumeConsumer(userId, kind);
+      if (kind === StreamKind.SCREEN) {
+        enableStream(userId, StreamKind.SCREEN_AUDIO);
+        await resumeConsumer(userId, StreamKind.SCREEN_AUDIO);
+      }
+    },
+    [enableStream, resumeConsumer]
+  );
 
   const {
     stats: transportStats,
@@ -696,6 +737,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     clearLocalStreams();
     clearRemoteUserStreams();
     clearExternalStreams();
+    clearDisabledStreams();
     cleanupTransports();
 
     setConnectionStatus(ConnectionStatus.DISCONNECTED);
@@ -706,6 +748,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     clearLocalStreams,
     clearRemoteUserStreams,
     clearExternalStreams,
+    clearDisabledStreams,
     cleanupTransports
   ]);
 
@@ -806,6 +849,8 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     removeExternalStreamTrack,
     removeExternalStream,
     clearRemoteUserStreamsForUser,
+    clearDisabledStreamsForUser,
+    isStreamDisabled,
     rtpCapabilities: routerRtpCapabilities.current!
   });
 
@@ -826,6 +871,9 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       isScreenShareSupported,
       getOrCreateRefs,
       getConsumerCodec,
+      disableUserStream,
+      enableUserStream,
+      isStreamDisabled,
       init,
 
       toggleMic,
@@ -849,6 +897,9 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       isScreenShareSupported,
       getOrCreateRefs,
       getConsumerCodec,
+      disableUserStream,
+      enableUserStream,
+      isStreamDisabled,
       init,
 
       toggleMic,

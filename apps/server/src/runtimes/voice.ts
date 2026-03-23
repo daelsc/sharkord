@@ -111,7 +111,7 @@ type TProducerMap = {
 
 type TConsumerMap = {
   [userId: number]: {
-    [remoteId: number]: Consumer<AppData>;
+    [compositeKey: string]: Consumer<AppData>;
   };
 };
 
@@ -536,17 +536,50 @@ class VoiceRuntime {
   public addConsumer = (
     userId: number,
     remoteId: number,
-    consumer: Consumer<AppData>
+    consumer: Consumer<AppData>,
+    kind?: string
   ) => {
     if (!this.consumers[userId]) {
       this.consumers[userId] = {};
     }
 
-    this.consumers[userId][remoteId] = consumer;
+    const key = kind ? `${remoteId}:${kind}` : String(remoteId);
+    this.consumers[userId][key] = consumer;
 
     consumer.observer.on('close', () => {
-      delete this.consumers[userId]?.[remoteId];
+      delete this.consumers[userId]?.[key];
     });
+  };
+
+  public getConsumer = (
+    userId: number,
+    remoteId: number,
+    kind: string
+  ): Consumer<AppData> | undefined => {
+    const key = `${remoteId}:${kind}`;
+    return this.consumers[userId]?.[key];
+  };
+
+  public pauseConsumer = async (
+    userId: number,
+    remoteId: number,
+    kind: string
+  ): Promise<boolean> => {
+    const consumer = this.getConsumer(userId, remoteId, kind);
+    if (!consumer) return false;
+    await consumer.pause();
+    return true;
+  };
+
+  public resumeConsumer = async (
+    userId: number,
+    remoteId: number,
+    kind: string
+  ): Promise<boolean> => {
+    const consumer = this.getConsumer(userId, remoteId, kind);
+    if (!consumer) return false;
+    await consumer.resume();
+    return true;
   };
 
   public createExternalStream = (options: {
