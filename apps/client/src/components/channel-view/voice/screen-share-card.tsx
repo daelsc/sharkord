@@ -46,7 +46,7 @@ const ScreenShareControls = memo(
   }: tScreenShareControlsProps) => {
     return (
       <CardControls>
-        {showAudioControl && <VolumeButton volumeKey={volumeKey} defaultVolume={0} />}
+        {showAudioControl && <VolumeButton volumeKey={volumeKey} />}
         {showStreamToggle && (
           <StreamToggleButton
             isDisabled={streamDisabled}

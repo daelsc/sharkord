@@ -92,12 +92,12 @@ const useVoiceRefs = (
   const userVolume = getVolume(userVolumeKey);
 
   const userScreenVolumeKey = getUserScreenVolumeKey(remoteId);
-  const userScreenVolume = getVolume(userScreenVolumeKey, 0);
+  const userScreenVolume = getVolume(userScreenVolumeKey);
 
   const externalVolumeKey =
     pluginId && streamKey ? getExternalVolumeKey(pluginId, streamKey) : null;
 
-  const externalVolume = externalVolumeKey ? getVolume(externalVolumeKey, 0) : 0;
+  const externalVolume = externalVolumeKey ? getVolume(externalVolumeKey) : 100;
 
   useEffect(() => {
     if (!videoStream || !videoRef.current) return;
