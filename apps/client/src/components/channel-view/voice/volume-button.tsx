@@ -14,11 +14,12 @@ import { memo, useCallback } from 'react';
 
 type TVolumeButtonProps = {
   volumeKey: TVolumeKey;
+  defaultVolume?: number;
 };
 
-const VolumeButton = memo(({ volumeKey }: TVolumeButtonProps) => {
+const VolumeButton = memo(({ volumeKey, defaultVolume = 100 }: TVolumeButtonProps) => {
   const { getVolume, setVolume, toggleMute } = useVolumeControl();
-  const volume = getVolume(volumeKey);
+  const volume = getVolume(volumeKey, defaultVolume);
   const isMuted = volume === 0;
 
   const handleVolumeChange = useCallback(
@@ -29,8 +30,8 @@ const VolumeButton = memo(({ volumeKey }: TVolumeButtonProps) => {
   );
 
   const handleToggleMute = useCallback(() => {
-    toggleMute(volumeKey);
-  }, [volumeKey, toggleMute]);
+    toggleMute(volumeKey, defaultVolume);
+  }, [volumeKey, toggleMute, defaultVolume]);
 
   return (
     <Popover>

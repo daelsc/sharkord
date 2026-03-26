@@ -1,14 +1,12 @@
 import {
   setHideNonVideoParticipants,
   setHideOwnScreenShare,
-  setShowUserBannersInVoice,
-  setVoiceVerticalLayout
+  setShowUserBannersInVoice
 } from '@/features/server/voice/actions';
 import {
   useHideNonVideoParticipants,
   useHideOwnScreenShare,
-  useShowUserBannersInVoice,
-  useVoiceVerticalLayout
+  useShowUserBannersInVoice
 } from '@/features/server/voice/hooks';
 import {
   Button,
@@ -27,7 +25,6 @@ const VoiceOptionsController = memo(() => {
   const hideNonVideoParticipants = useHideNonVideoParticipants();
   const showUserBanners = useShowUserBannersInVoice();
   const hideOwnScreenShare = useHideOwnScreenShare();
-  const verticalLayout = useVoiceVerticalLayout();
 
   const handleToggleHideNonVideo = useCallback((checked: boolean) => {
     setHideNonVideoParticipants(checked);
@@ -39,10 +36,6 @@ const VoiceOptionsController = memo(() => {
 
   const handleToggleHideOwnScreenShare = useCallback((checked: boolean) => {
     setHideOwnScreenShare(checked);
-  }, []);
-
-  const handleToggleVerticalLayout = useCallback((checked: boolean) => {
-    setVoiceVerticalLayout(checked);
   }, []);
 
   return (
@@ -116,21 +109,6 @@ const VoiceOptionsController = memo(() => {
             />
           </div>
 
-          <div className="flex items-center justify-between space-x-3">
-            <span
-              onClick={() => handleToggleVerticalLayout(!verticalLayout)}
-              className="text-sm text-foreground cursor-pointer select-none flex-1"
-            >
-              {t('verticalLayout')}
-            </span>
-            <Switch
-              id="vertical-layout"
-              checked={verticalLayout}
-              onCheckedChange={handleToggleVerticalLayout}
-              data-1p-ignore
-              data-lpignore="true"
-            />
-          </div>
         </div>
       </PopoverContent>
     </Popover>

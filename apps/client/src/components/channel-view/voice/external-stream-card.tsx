@@ -93,7 +93,7 @@ const ExternalStreamCard = memo(
       useVolumeControl();
 
     const volumeKey = getExternalVolumeKey(stream.pluginId, stream.key);
-    const volume = getVolume(volumeKey);
+    const volume = getVolume(volumeKey, 0);
     const isMuted = volume === 0;
 
     const {
@@ -128,7 +128,7 @@ const ExternalStreamCard = memo(
     );
 
     const handleMuteToggle = useCallback(() => {
-      toggleMute(volumeKey);
+      toggleMute(volumeKey, 0);
     }, [volumeKey, toggleMute]);
 
     const hasVideo = stream.tracks?.video && hasExternalVideoStream;

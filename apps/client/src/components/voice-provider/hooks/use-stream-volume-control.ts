@@ -19,7 +19,8 @@ export const useStreamVolumeControl = (props: TStreamVolumeProps) => {
       ? getUserVolumeKey(props.userId)
       : getExternalVolumeKey(props.pluginId, props.streamKey);
 
-  const volume = getVolume(volumeKey);
+  const defaultVolume = props.type === 'external' ? 0 : 100;
+  const volume = getVolume(volumeKey, defaultVolume);
   const isMuted = volume === 0;
 
   const handleSetVolume = useCallback(
@@ -30,8 +31,8 @@ export const useStreamVolumeControl = (props: TStreamVolumeProps) => {
   );
 
   const handleToggleMute = useCallback(() => {
-    toggleMute(volumeKey);
-  }, [toggleMute, volumeKey]);
+    toggleMute(volumeKey, defaultVolume);
+  }, [toggleMute, volumeKey, defaultVolume]);
 
   return useMemo(
     () => ({

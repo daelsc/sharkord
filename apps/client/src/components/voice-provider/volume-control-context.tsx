@@ -21,9 +21,9 @@ type TVolumeSettings = Record<TVolumeKey, number>;
 
 type TVolumeControlContext = {
   volumes: TVolumeSettings;
-  getVolume: (key: TVolumeKey) => number;
+  getVolume: (key: TVolumeKey, defaultVolume?: number) => number;
   setVolume: (key: TVolumeKey, volume: number) => void;
-  toggleMute: (key: TVolumeKey) => void;
+  toggleMute: (key: TVolumeKey, defaultVolume?: number) => void;
   getUserVolumeKey: (userId: number) => TVolumeKey;
   getUserScreenVolumeKey: (userId: number) => TVolumeKey;
   getExternalVolumeKey: (pluginId: string, key: string) => TVolumeKey;
@@ -64,8 +64,8 @@ const VolumeControlProvider = memo(
     const previousVolumesRef = useRef<TVolumeSettings>({});
 
     const getVolume = useCallback(
-      (key: TVolumeKey): number => {
-        return volumes[key] ?? 100;
+      (key: TVolumeKey, defaultVolume: number = 100): number => {
+        return volumes[key] ?? defaultVolume;
       },
       [volumes]
     );
@@ -82,9 +82,9 @@ const VolumeControlProvider = memo(
       }
     }, []);
 
-    const toggleMute = useCallback((key: TVolumeKey) => {
+    const toggleMute = useCallback((key: TVolumeKey, defaultVolume: number = 100) => {
       setVolumes((prev) => {
-        const currentVolume = prev[key] ?? 100;
+        const currentVolume = prev[key] ?? defaultVolume;
         const isMuted = currentVolume === 0;
         const newVolume = isMuted
           ? (previousVolumesRef.current[key] ?? 100)

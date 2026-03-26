@@ -241,12 +241,3 @@ export const setHideOwnScreenShare = (value: boolean): void => {
   }
 };
 
-export const setVoiceVerticalLayout = (value: boolean): void => {
-  store.dispatch(serverSliceActions.setVoiceVerticalLayout(value));
-
-  try {
-    setLocalStorageItemBool(LocalStorageKey.VOICE_VERTICAL_LAYOUT, value);
-  } catch (error) {
-    console.error('Failed to save voice options:', error);
-  }
-};

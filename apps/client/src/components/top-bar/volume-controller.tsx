@@ -23,6 +23,7 @@ type AudioStreamControlProps = {
   volumeKey: TVolumeKey;
   name: string;
   type: AudioStreamType;
+  defaultVolume?: number;
 };
 
 type VolumeControllerProps = {
@@ -40,13 +41,14 @@ type AudioStream = {
   userId?: number;
   name: string;
   type: AudioStreamType;
+  defaultVolume?: number;
 };
 
 const AudioStreamControl = memo(
-  ({ userId, volumeKey, type, name }: AudioStreamControlProps) => {
+  ({ userId, volumeKey, type, name, defaultVolume = 100 }: AudioStreamControlProps) => {
     const user = useUserById(userId || 0);
     const { getVolume, setVolume, toggleMute } = useVolumeControl();
-    const volume = getVolume(volumeKey);
+    const volume = getVolume(volumeKey, defaultVolume);
     const isMuted = volume === 0;
 
     return (
@@ -69,7 +71,7 @@ const AudioStreamControl = memo(
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => toggleMute(volumeKey)}
+            onClick={() => toggleMute(volumeKey, defaultVolume)}
             className="h-6 w-6 p-0"
           >
             {isMuted ? (
@@ -124,7 +126,8 @@ const VolumeController = memo(({ channelId }: VolumeControllerProps) => {
           volumeKey: getUserScreenVolumeKey(voiceUser.id),
           userId: voiceUser.id,
           name: voiceUser.name,
-          type: AudioStreamType.ScreenShare
+          type: AudioStreamType.ScreenShare,
+          defaultVolume: 0
         });
       }
     });
@@ -133,7 +136,8 @@ const VolumeController = memo(({ channelId }: VolumeControllerProps) => {
       streams.push({
         volumeKey: getExternalVolumeKey(stream.pluginId, stream.key),
         name: stream.title || t('externalAudio'),
-        type: AudioStreamType.External
+        type: AudioStreamType.External,
+        defaultVolume: 0
       });
     });
 
@@ -178,6 +182,7 @@ const VolumeController = memo(({ channelId }: VolumeControllerProps) => {
                 volumeKey={stream.volumeKey}
                 name={stream.name}
                 type={stream.type}
+                defaultVolume={stream.defaultVolume}
               />
             ))}
             {audioStreams.length === 0 && (

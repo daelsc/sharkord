@@ -54,6 +54,3 @@ export const showUserBannersInVoiceSelector = (state: IRootState) =>
 
 export const hideOwnScreenShareSelector = (state: IRootState) =>
   state.server.hideOwnScreenShare;
-
-export const voiceVerticalLayoutSelector = (state: IRootState) =>
-  state.server.voiceVerticalLayout;
