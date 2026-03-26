@@ -30,52 +30,58 @@ const voiceRuntimes = new Map<number, VoiceRuntime>();
 
 const defaultRouterOptions: RouterOptions<AppData> = {
   mediaCodecs: [
+    // H.264 — preferred for NVENC hardware encoding
+    {
+      kind: 'video',
+      mimeType: 'video/H264',
+      clockRate: 90000,
+      parameters: {
+        'level-asymmetry-allowed': 1,
+        'packetization-mode': 1,
+        'profile-level-id': '640032'
+      }
+    },
+    {
+      kind: 'video',
+      mimeType: 'video/H264',
+      clockRate: 90000,
+      parameters: {
+        'level-asymmetry-allowed': 1,
+        'packetization-mode': 1,
+        'profile-level-id': '4d0032'
+      }
+    },
+    {
+      kind: 'video',
+      mimeType: 'video/H264',
+      clockRate: 90000,
+      parameters: {
+        'level-asymmetry-allowed': 1,
+        'packetization-mode': 1,
+        'profile-level-id': '42e01f'
+      }
+    },
+    // AV1 — future-proof, NVENC on RTX 40/50 series
+    {
+      kind: 'video',
+      mimeType: 'video/AV1',
+      clockRate: 90000,
+      parameters: {}
+    },
+    // VP9/VP8 — software fallback
     {
       kind: 'video',
       mimeType: 'video/VP9',
       clockRate: 90000,
       parameters: {
-        'profile-id': 0,
-        'x-google-start-bitrate': 2000
+        'profile-id': 0
       }
     },
     {
       kind: 'video',
       mimeType: 'video/VP8',
       clockRate: 90000,
-      parameters: {
-        'x-google-start-bitrate': 2000
-      }
-    },
-    {
-      kind: 'video',
-      mimeType: 'video/H264',
-      clockRate: 90000,
-      parameters: {
-        'packetization-mode': 1,
-        'profile-level-id': '42e01f',
-        'level-asymmetry-allowed': 1,
-        'x-google-start-bitrate': 2000
-      }
-    },
-    {
-      kind: 'video',
-      mimeType: 'video/H264',
-      clockRate: 90000,
-      parameters: {
-        'packetization-mode': 1,
-        'profile-level-id': '640032',
-        'level-asymmetry-allowed': 1,
-        'x-google-start-bitrate': 2000
-      }
-    },
-    {
-      kind: 'video',
-      mimeType: 'video/AV1',
-      clockRate: 90000,
-      parameters: {
-        'x-google-start-bitrate': 2000
-      }
+      parameters: {}
     },
     {
       kind: 'audio',
