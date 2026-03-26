@@ -30,18 +30,7 @@ const voiceRuntimes = new Map<number, VoiceRuntime>();
 
 const defaultRouterOptions: RouterOptions<AppData> = {
   mediaCodecs: [
-    // H.265/HEVC — best quality per bit, NVENC supported
-    {
-      kind: 'video',
-      mimeType: 'video/H265',
-      clockRate: 90000,
-      parameters: {
-        'level-id': 123,
-        'profile-id': 1,
-        'tier-flag': 0
-      }
-    },
-    // H.264 — widest NVENC compatibility, fallback if HEVC unsupported
+    // H.264 — preferred for NVENC hardware encoding
     {
       kind: 'video',
       mimeType: 'video/H264',
