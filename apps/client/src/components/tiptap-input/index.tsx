@@ -11,24 +11,27 @@ import { ChevronDown, ChevronUp, Smile } from 'lucide-react';
 import {
   memo,
   useEffect,
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
-  useState
+  useState,
+  type Ref
 } from 'react';
-import type { TEmojiItem } from './helpers';
 import {
   COMMANDS_STORAGE_KEY,
   CommandSuggestion
-} from './plugins/command-suggestion';
-import { Mention } from './plugins/mentions';
-import { MentionNode } from './plugins/mentions/node';
+} from './extensions/commands/command-suggestion';
+import { PluginCommandNode } from './extensions/commands/plugin-command-node';
+import { SlashCommands } from './extensions/commands/slash-commands-extension';
+import { EmojiSuggestion } from './extensions/emojis/suggestions';
+import { Mention } from './extensions/mentions';
+import { MentionNode } from './extensions/mentions/node';
 import {
   MENTION_STORAGE_KEY,
   MentionSuggestion
-} from './plugins/mentions/suggestion';
-import { SlashCommands } from './plugins/slash-commands-extension';
-import { EmojiSuggestion } from './plugins/suggestions';
+} from './extensions/mentions/suggestion';
+import type { TEmojiItem } from './helpers';
 
 type TTiptapInputProps = {
   disabled?: boolean;
@@ -39,6 +42,11 @@ type TTiptapInputProps = {
   onCancel?: () => void;
   onTyping?: () => void;
   commands?: TCommandInfo[];
+  ref?: Ref<TTiptapInputHandle>;
+};
+
+type TTiptapInputHandle = {
+  focus: () => void;
 };
 
 const TiptapInput = memo(
@@ -50,7 +58,8 @@ const TiptapInput = memo(
     onTyping,
     disabled,
     readOnly,
-    commands
+    commands,
+    ref
   }: TTiptapInputProps) => {
     const readOnlyRef = useRef(readOnly);
 
@@ -98,7 +107,8 @@ const TiptapInput = memo(
           users,
           suggestion: MentionSuggestion
         }),
-        MentionNode
+        MentionNode,
+        PluginCommandNode
       ];
 
       if (commands) {
@@ -178,6 +188,14 @@ const TiptapInput = memo(
         handleDrop: () => readOnlyRef.current
       }
     });
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        focus: () => editor?.chain().focus().run()
+      }),
+      [editor]
+    );
 
     const handleEmojiSelect = (emoji: TEmojiItem) => {
       if (disabled || readOnly) return;
@@ -309,4 +327,4 @@ const TiptapInput = memo(
   }
 );
 
-export { TiptapInput };
+export { TiptapInput, type TTiptapInputHandle };

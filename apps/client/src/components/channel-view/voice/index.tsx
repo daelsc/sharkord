@@ -1,4 +1,5 @@
 import { useVoiceUsersByChannelId } from '@/features/server/hooks';
+import { useOwnUserId } from '@/features/server/users/hooks';
 import {
   useHideNonVideoParticipants,
   useHideOwnScreenShare,
@@ -65,8 +66,9 @@ const VoiceChannel = memo(({ channelId }: TChannelProps) => {
       }
 
       // Screen shares always have video, so always show them
-      // Skip own screen share if hideOwnScreenShare is enabled
-      if (voiceUser.state.sharingScreen && !(hideOwnScreenShare && voiceUser.id === ownUserId)) {
+      const shouldHideOwnScreenShare =
+        hideOwnScreenShare && voiceUser.id === ownUserId;
+      if (voiceUser.state.sharingScreen && !shouldHideOwnScreenShare) {
         const screenShareCardId = `screen-share-${voiceUser.id}`;
 
         cards.push(

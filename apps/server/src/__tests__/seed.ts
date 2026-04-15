@@ -62,6 +62,7 @@ const seedDatabase = async (db: BunSQLiteDatabase) => {
     name: 'Test Server',
     description: 'Test server description',
     password: '',
+    onlyAskForPasswordOnFirstJoin: false,
     serverId: randomUUIDv7(),
     secretToken: await sha256(TEST_SECRET_TOKEN),
     allowNewUsers: true,
@@ -77,6 +78,7 @@ const seedDatabase = async (db: BunSQLiteDatabase) => {
     storageOverflowAction: STORAGE_OVERFLOW_ACTION,
     enablePlugins: false,
     enableSearch: true,
+    showWelcomeDialog: true,
     storageSignedUrlsEnabled: false,
     storageSignedUrlsTtlSeconds: STORAGE_DEFAULT_SIGNED_URLS_TTL_SECONDS
   };

@@ -70,8 +70,6 @@ const VoiceOptionsController = memo(() => {
               id="hide-non-video"
               checked={hideNonVideoParticipants}
               onCheckedChange={handleToggleHideNonVideo}
-              data-1p-ignore
-              data-lpignore="true"
             />
           </div>
 
@@ -86,8 +84,22 @@ const VoiceOptionsController = memo(() => {
               id="show-user-banners"
               checked={showUserBanners}
               onCheckedChange={handleToggleShowUserBanners}
-              data-1p-ignore
-              data-lpignore="true"
+            />
+          </div>
+
+          <div className="flex items-center justify-between space-x-3">
+            <span
+              onClick={() =>
+                handleToggleHideOwnScreenShare(!hideOwnScreenShare)
+              }
+              className="text-sm text-foreground cursor-pointer select-none flex-1"
+            >
+              {t('hideOwnScreenShare')}
+            </span>
+            <Switch
+              id="hide-own-screen-share"
+              checked={hideOwnScreenShare}
+              onCheckedChange={handleToggleHideOwnScreenShare}
             />
           </div>
 

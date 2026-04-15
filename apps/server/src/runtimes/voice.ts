@@ -131,6 +131,7 @@ type TExternalStreamInternal = {
   key: string;
   pluginId: string;
   avatarUrl?: string;
+  bannerUrl?: string;
   producers: TExternalStreamProducers;
 };
 
@@ -298,12 +299,22 @@ class VoiceRuntime {
         ...state
       }
     });
+
+    eventBus.emit('user:joined_voice', {
+      userId: userId,
+      channelId: this.id
+    });
   };
 
   public removeUser = (userId: number) => {
     this.state.users = this.state.users.filter((u) => u.userId !== userId);
 
     this.cleanupUserResources(userId);
+
+    eventBus.emit('user:left_voice', {
+      userId: userId,
+      channelId: this.id
+    });
   };
 
   private cleanupUserResources = (userId: number) => {
@@ -593,6 +604,7 @@ class VoiceRuntime {
     key: string;
     pluginId: string;
     avatarUrl?: string;
+    bannerUrl?: string;
     producers: {
       audio?: Producer;
       video?: Producer;
@@ -600,13 +612,14 @@ class VoiceRuntime {
   }) => {
     const streamId = this.externalCounter++;
 
-    const { title, key, pluginId, avatarUrl, producers } = options;
+    const { title, key, pluginId, avatarUrl, bannerUrl, producers } = options;
 
     this.externalStreamsInternal[streamId] = {
       title,
       key,
       pluginId,
       avatarUrl,
+      bannerUrl,
       producers: {
         audioProducer: producers.audio,
         videoProducer: producers.video
@@ -634,6 +647,7 @@ class VoiceRuntime {
       key,
       pluginId,
       avatarUrl,
+      bannerUrl,
       tracks: {
         audio: !!producers.audio,
         video: !!producers.video
@@ -715,6 +729,7 @@ class VoiceRuntime {
     options: {
       title?: string;
       avatarUrl?: string;
+      bannerUrl?: string;
       producers?: {
         audio?: Producer;
         video?: Producer;
@@ -737,6 +752,11 @@ class VoiceRuntime {
     if (options.avatarUrl !== undefined) {
       internal.avatarUrl = options.avatarUrl;
       publicStream.avatarUrl = options.avatarUrl;
+    }
+
+    if (options.bannerUrl !== undefined) {
+      internal.bannerUrl = options.bannerUrl;
+      publicStream.bannerUrl = options.bannerUrl;
     }
 
     if (options.producers) {
