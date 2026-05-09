@@ -13,18 +13,12 @@ type TVoiceGridProps = {
   children: ReactNode[];
   pinnedCardId?: string;
   className?: string;
-  verticalLayout?: boolean;
 };
 
 const OPTIMAL_CELL_ASPECT_RATIO = 1.5;
 
 const VoiceGrid = memo(
-  ({
-    children,
-    pinnedCardId,
-    className,
-    verticalLayout = false
-  }: TVoiceGridProps) => {
+  ({ children, pinnedCardId, className }: TVoiceGridProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [containerSize, setContainerSize] = useState<{
       width: number;
@@ -82,10 +76,6 @@ const VoiceGrid = memo(
       const childArray = Array.isArray(children) ? children : [children];
       const totalCards = childArray.length;
 
-      if (verticalLayout) {
-        return 1;
-      }
-
       if (!containerSize) {
         return 1;
       }
@@ -97,7 +87,7 @@ const VoiceGrid = memo(
       );
 
       return cols;
-    }, [children, containerSize, verticalLayout]);
+    }, [children, containerSize]);
 
     const { pinnedCard, regularCards } = useMemo(() => {
       const childArray = Array.isArray(children) ? children : [children];

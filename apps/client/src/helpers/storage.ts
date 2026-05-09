@@ -32,8 +32,7 @@ export enum LocalStorageKey {
   BROWSER_NOTIFICATIONS_FOR_REPLIES = 'sharkord-browser-notifications-for-replies',
   LANGUAGE = 'sharkord-language',
   PLUGIN_SLOT_DEBUG = 'sharkord-plugin-slot-debug',
-  HIDE_OWN_SCREEN_SHARE = 'sharkord-hide-own-screen-share',
-  VOICE_VERTICAL_LAYOUT = 'sharkord-voice-vertical-layout'
+  HIDE_OWN_SCREEN_SHARE = 'sharkord-hide-own-screen-share'
 }
 
 export enum SessionStorageKey {

@@ -3,8 +3,7 @@ import { useOwnUserId } from '@/features/server/users/hooks';
 import {
   useHideNonVideoParticipants,
   useHideOwnScreenShare,
-  useVoiceChannelExternalStreamsList,
-  useVoiceVerticalLayout
+  useVoiceChannelExternalStreamsList
 } from '@/features/server/voice/hooks';
 import { memo, useMemo } from 'react';
 import { ControlsBar } from './controls-bar';
@@ -27,7 +26,6 @@ const VoiceChannel = memo(({ channelId }: TChannelProps) => {
   const { pinnedCard, pinCard, unpinCard, isPinned } = usePinCardController();
   const hideNonVideoParticipants = useHideNonVideoParticipants();
   const hideOwnScreenShare = useHideOwnScreenShare();
-  const verticalLayout = useVoiceVerticalLayout();
   const ownUserId = useOwnUserId();
 
   const cards = useMemo(() => {
@@ -146,11 +144,7 @@ const VoiceChannel = memo(({ channelId }: TChannelProps) => {
 
   return (
     <div className="flex-1 relative bg-background overflow-hidden">
-      <VoiceGrid
-        pinnedCardId={pinnedCard?.id}
-        className="h-full"
-        verticalLayout={verticalLayout}
-      >
+      <VoiceGrid pinnedCardId={pinnedCard?.id} className="h-full">
         {cards}
       </VoiceGrid>
       <ControlsBar channelId={channelId} />
