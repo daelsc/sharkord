@@ -24,7 +24,12 @@ import {
 import { getResWidthHeight } from '@/helpers/get-res-with-height';
 import { useScreenShareSupport } from '@/hooks/use-screen-share-support';
 import { getTRPCClient } from '@/lib/trpc';
-import { NoiseSuppression, VideoCodec, type TRemoteUserStreamKinds, type TStreamQuality } from '@/types';
+import {
+  NoiseSuppression,
+  VideoCodec,
+  type TRemoteUserStreamKinds,
+  type TStreamQuality
+} from '@/types';
 import {
   DEFAULT_BITRATE,
   StreamKind,
@@ -123,8 +128,14 @@ export type TVoiceProvider = {
     quality: TStreamQuality
   ) => Promise<void>;
   isSimulcastConsumer: (remoteId: number, kind: StreamKind) => boolean;
-  disableUserStream: (userId: number, kind: TRemoteUserStreamKinds) => Promise<void>;
-  enableUserStream: (userId: number, kind: TRemoteUserStreamKinds) => Promise<void>;
+  disableUserStream: (
+    userId: number,
+    kind: TRemoteUserStreamKinds
+  ) => Promise<void>;
+  enableUserStream: (
+    userId: number,
+    kind: TRemoteUserStreamKinds
+  ) => Promise<void>;
   isStreamDisabled: (userId: number, kind: StreamKind) => boolean;
   screenShareLabel: string | null;
   init: (
