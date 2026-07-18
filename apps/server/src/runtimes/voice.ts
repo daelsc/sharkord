@@ -30,21 +30,20 @@ import { pubsub } from '../utils/pubsub';
 const voiceRuntimes = new Map<number, VoiceRuntime>();
 
 const defaultRouterOptions: RouterOptions<AppData> = {
+  // Video codecs ordered to prefer H.264 first for NVENC hardware encoding,
+  // then AV1, with VP9/VP8 as software fallbacks. Bitrate hints
+  // (x-google-start-bitrate) preserved from upstream for simulcast quality.
+  // NOTE: simulcast (when enabled) is hardcoded to VP8 client-side and is
+  // unaffected by this order; this only governs the non-simulcast publish path.
   mediaCodecs: [
     {
       kind: 'video',
-      mimeType: 'video/VP9',
+      mimeType: 'video/H264',
       clockRate: 90000,
       parameters: {
-        'profile-id': 0,
-        'x-google-start-bitrate': 2000
-      }
-    },
-    {
-      kind: 'video',
-      mimeType: 'video/VP8',
-      clockRate: 90000,
-      parameters: {
+        'packetization-mode': 1,
+        'profile-level-id': '640032',
+        'level-asymmetry-allowed': 1,
         'x-google-start-bitrate': 2000
       }
     },
@@ -61,18 +60,24 @@ const defaultRouterOptions: RouterOptions<AppData> = {
     },
     {
       kind: 'video',
-      mimeType: 'video/H264',
+      mimeType: 'video/AV1',
       clockRate: 90000,
       parameters: {
-        'packetization-mode': 1,
-        'profile-level-id': '640032',
-        'level-asymmetry-allowed': 1,
         'x-google-start-bitrate': 2000
       }
     },
     {
       kind: 'video',
-      mimeType: 'video/AV1',
+      mimeType: 'video/VP9',
+      clockRate: 90000,
+      parameters: {
+        'profile-id': 0,
+        'x-google-start-bitrate': 2000
+      }
+    },
+    {
+      kind: 'video',
+      mimeType: 'video/VP8',
       clockRate: 90000,
       parameters: {
         'x-google-start-bitrate': 2000
