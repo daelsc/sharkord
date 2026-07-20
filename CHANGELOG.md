@@ -3,6 +3,71 @@
 Notable changes on the `development` branch of this fork. Upstream is
 `Sharkord/sharkord`; release tags there (`v0.0.x`) are the upstream baseline.
 
+## 2026-07-19 — Login JWT TTL bumped to 10 years + deployed to duper
+
+### Summary
+Users had to re-authenticate roughly weekly because the login JWT
+expired after 7 days (`expiresIn: '604800s'`) and there is no
+refresh-token / session-table layer — the client `auto-login` merely
+persists the *same* JWT in `localStorage`, so once `exp` passed the
+user was bounced to the connect screen. Bumped the TTL to 10 years so
+normal users effectively never re-authenticate.
+
+### Change
+- `apps/server/src/http/login.ts` — single change: `expiresIn: '604800s'`
+  → `expiresIn: '10y'` (one line + comment). No DB migration, no client
+  change, no config change.
+- Design spec (option A1, approved):
+  `docs/superpowers/specs/2026-07-19-login-token-ttl-10y-design.md`
+  (commit `ec9f977`). Alternatives A2 (named constant), A3 (DB-backed
+  setting), B (session table / revocation), and C (refresh tokens) were
+  considered and rejected in favor of the inline bump.
+
+### Security tradeoff (acknowledged and accepted)
+A 10-year bearer JWT cannot be revoked per-token: a leaked token grants
+access for up to 10 years; banning a user or changing their password
+does **not** invalidate an already-issued token; the only revocation
+lever is rotating the server secret, which invalidates *all* tokens
+(forces a global re-login). Explicit tradeoff for "never re-auth",
+not an oversight. Revisit option B or C if revocation is ever needed.
+
+### Verification (local, pre-deploy)
+- `bun run check-types`: 0 errors, 7/7 workspaces
+- `bun run test`: 775 pass, 0 fail
+- `bun run lint`: 0 errors (warnings pre-existing)
+- `bun run format:check`: 0 errors, 7/7 workspaces
+
+### Deployment
+- `development` @ `cd05bf0` pushed to origin.
+- GHCR build via `ghcr-publish.yml` (`workflow_dispatch` on
+  `development`), run `29712053984` → `build-and-publish` green in
+  1m28s. Image `ghcr.io/daelsc/sharkord:latest` + `:cd05bf0`
+  (digest `sha256:00ba58cf8d7612c0f85bbeaf3badaccbb121a1745891101b3db259c4a4fadcdd`).
+- Deployed to `Sharkord-Custom` on `duper` (Unraid): tagged the running
+  image as `ghcr.io/daelsc/sharkord:rollback-pre-ttl-bump`
+  (old image `eca4f98f11bf`); backed up `db.sqlite` + `config.ini` +
+  `drizzle/` to
+  `/mnt/user/appdata/sharkord/_backups/20260719-191156-pre-ttl-bump/`;
+  pulled new image (`1b27189c03e3`); `docker stop`→`rm`→`run` with
+  identical params (name `Sharkord-Custom`, ports 4991/40000, volume
+  `/mnt/user/appdata/sharkord:/home/bun/.config/sharkord`, env
+  `SHARKORD_WEBRTC_ANNOUNCED_ADDRESS=sharkord.thesemite.com` + `TZ` +
+  `RUNNING_IN_DOCKER=true`); verified boot banner `SHARKORD v0.0.23`,
+  HTTP 200 (local + public via Nginx Proxy Manager), 0 restarts, no
+  error lines; a real client (`DaveFiveFiddy`) auto-reconnected on
+  boot, confirming the auth/tRPC path on the new image.
+- **Rollout:** only newly issued tokens get the 10y TTL; existing 7-day
+  tokens keep working until their own `exp`, then the user re-logs in
+  once and gets a 10y token. No forced global re-login (no secret
+  rotation).
+- **Rollback (one-liner):** `docker stop`→`rm` + `docker run ...`
+  `ghcr.io/daelsc/sharkord:rollback-pre-ttl-bump` (old image preserved).
+
+### Repo state
+- `development` @ `cd05bf0` pushed to origin (this entry added in a
+  follow-up commit).
+- No tag cut for this change (single-line TTL bump; not a release).
+
 ## 2026-07-17 — Rebased onto upstream v0.0.23 + deployed to duper
 
 ### Summary
